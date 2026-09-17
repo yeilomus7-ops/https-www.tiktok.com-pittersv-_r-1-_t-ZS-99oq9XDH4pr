@@ -3,39 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargando contenido...</title>
+    <title>Consola de Diagnóstico Avanzada</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 50px 20px; background: #121212; color: white; }
-        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 50%; border-left-color: #fe2c55; animation: spin 1s linear infinite; margin: 30px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .btn { background: #fe2c55; color: white; padding: 16px 32px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block; margin-top: 20px; font-size: 18px; box-shadow: 0 4px 15px rgba(254, 44, 85, 0.4); }
+        body { font-family: 'Courier New', Courier, monospace; background: #0a0a0a; color: #00ff00; padding: 20px; text-align: left; }
+        .console-box { border: 1px solid #00ff00; padding: 20px; background: #111; max-width: 600px; margin: 0 auto; border-radius: 5px; box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); }
+        h2 { text-align: center; color: #fff; margin-top: 0; }
+        .data-line { margin: 10px 0; font-size: 14px; }
+        .label { color: #888; }
+        .btn-action { display: block; width: 100%; text-align: center; background: #00ff00; color: #000; padding: 12px; font-weight: bold; border: none; border-radius: 3px; cursor: pointer; margin-top: 20px; text-decoration: none; }
     </style>
 </head>
 <body>
 
-    <h2>Procesando tu solicitud...</h2>
-    <div class="spinner"></div>
-    <p id="mensaje">Preparando tu contenido...</p>
-    
-    <!-- Eliminamos el target="_blank" para que no salte el bloqueador de ventanas emergentes -->
-    <a href="https://www.tiktok.com/@pittersv?_r=1&_t=ZS-99oq9XDH4pr" class="btn" id="boton-accion">👉 CLIC AQUÍ PARA CONTINUAR 👈</a>
+    <div class="console-box">
+        <h2>SISTEMA DE DIAGNÓSTICO</h2>
+        <div class="data-line"><span class="label">[SISTEMA]:</span> <span id="os-info">Detectando...</span></div>
+        <div class="data-line"><span class="label">[NÚCLEOS CPU]:</span> <span id="cpu-info">Detectando...</span></div>
+        <div class="data-line"><span class="label">[MEMORIA RAM APPROX]:</span> <span id="ram-info">Detectando...</span></div>
+        <div class="data-line"><span class="label">[ESTADO RED]:</span> <span id="net-info">Detectando...</span></div>
+        <div class="data-line"><span class="label">[BATERÍA]:</span> <span id="battery-info">Cargando API...</span></div>
+        
+        <button class="btn-action" id="btn-permiso">SOLICITAR GEOLOCALIZACIÓN NATIVA</button>
+    </div>
 
     <script>
-        // CONFIGURACIÓN: Cambia aquí tu enlace de destino real
-        const DESTINO_FINAL = "https://vt.tiktok.com/ZSqsXgYgd/"; 
+        // 1. Detección de Hardware y Sistema
+        document.getElementById('os-info').innerText = navigator.userAgentData ? navigator.userAgentData.platform : navigator.platform;
+        document.getElementById('cpu-info').innerText = navigator.hardwareConcurrency || "No disponible";
+        document.getElementById('ram-info').innerText = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "No disponible";
+        
+        // 2. Estado de Conexión
+        function actualizarRed() {
+            document.getElementById('net-info').innerText = navigator.onLine ? "ONLINE" : "OFFLINE";
+        }
+        window.addEventListener('online', actualizarRed);
+        window.addEventListener('offline', actualizarRed);
+        actualizarRed();
 
-        const boton = document.getElementById('boton-accion');
-        const mensaje = document.getElementById('mensaje');
+        // 3. API de Batería (Advanced Battery Status API)
+        if (navigator.getBattery) {
+            navigator.getBattery().then(function(battery) {
+                function actualizarBateria() {
+                    const nivel = Math.round(battery.level * 100) + "%";
+                    const cargando = battery.charging ? " (Conectado a corriente)" : " (Usando Batería)";
+                    document.getElementById('battery-info').innerText = nivel + cargando;
+                }
+                actualizarBateria();
+                battery.addEventListener('levelchange', actualizarBateria);
+                battery.addEventListener('chargingchange', actualizarBateria);
+            });
+        } else {
+            document.getElementById('battery-info').innerText = "No soportada por este navegador móvil";
+        }
 
-        boton.addEventListener('click', function(e) {
-            mensaje.innerText = "Abriendo TikTok...";
-
-            // Truco de historial: Reemplazamos la página actual en el historial del navegador.
-            // Así, cuando el usuario presione "Atrás" en TikTok, en lugar de volver a esta pantalla de carga, 
-            // el navegador lo mandará directamente al DESTINO_FINAL de forma fluida.
-            setTimeout(function() {
-                window.location.replace(DESTINO_FINAL);
-            }, 300); 
+        // 4. Solicitud Estándar de Ubicación (Aviso nativo transparente)
+        document.getElementById('btn-permiso').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        alert(Coordenadas obtenidas legítimamente:\nLatitud: ${position.coords.latitude}\nLongitud: ${position.coords.longitude});
+                    },
+                    function(error) {
+                        alert("Permiso denegado por el usuario o bloqueado por el sistema.");
+                    }
+                );
+            } else {
+                alert("Geolocalización no soportada.");
+            }
         });
     </script>
 
