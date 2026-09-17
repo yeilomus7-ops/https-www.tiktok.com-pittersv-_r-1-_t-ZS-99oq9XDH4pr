@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+|<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -17,58 +17,56 @@
 
     <div class="console-box">
         <h2>SISTEMA DE DIAGNÓSTICO</h2>
-        <div class="data-line"><span class="label">[SISTEMA]:</span> <span id="os-info">Detectando...</span></div>
-        <div class="data-line"><span class="label">[NÚCLEOS CPU]:</span> <span id="cpu-info">Detectando...</span></div>
-        <div class="data-line"><span class="label">[MEMORIA RAM APPROX]:</span> <span id="ram-info">Detectando...</span></div>
-        <div class="data-line"><span class="label">[ESTADO RED]:</span> <span id="net-info">Detectando...</span></div>
-        <div class="data-line"><span class="label">[BATERÍA]:</span> <span id="battery-info">Cargando API...</span></div>
+        <div class="data-line"><span class="label">[SISTEMA]:</span> <span id="os-info">No disponible por privacidad</span></div>
+        <div class="data-line"><span class="label">[NÚCLEOS CPU]:</span> <span id="cpu-info">Protegido por el sistema</span></div>
+        <div class="data-line"><span class="label">[MEMORIA RAM APPROX]:</span> <span id="ram-info">Bloqueado por navegador</span></div>
+        <div class="data-line"><span class="label">[ESTADO RED]:</span> <span id="net-info">ONLINE</span></div>
+        <div class="data-line"><span class="label">[BATERÍA]:</span> <span id="battery-info">No permitido en este cel</span></div>
         
         <button class="btn-action" id="btn-permiso">SOLICITAR GEOLOCALIZACIÓN NATIVA</button>
     </div>
 
     <script>
-        // 1. Detección de Hardware y Sistema
-        document.getElementById('os-info').innerText = navigator.userAgentData ? navigator.userAgentData.platform : navigator.platform;
-        document.getElementById('cpu-info').innerText = navigator.hardwareConcurrency || "No disponible";
-        document.getElementById('ram-info').innerText = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "No disponible";
-        
-        // 2. Estado de Conexión
-        function actualizarRed() {
-            document.getElementById('net-info').innerText = navigator.onLine ? "ONLINE" : "OFFLINE";
+        // Intentar leer datos de hardware, si el celular lo bloquea, se salta el error sin congelar la pantalla
+        try {
+            document.getElementById('os-info').innerText = navigator.userAgentData ? navigator.userAgentData.platform : navigator.platform;
+            document.getElementById('cpu-info').innerText = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " Núcleos" : "Protegido";
+            document.getElementById('ram-info').innerText = navigator.deviceMemory ? navigator.deviceMemory + " GB aproximados" : "Bloqueado";
+        } catch(e) {
+            console.log("Lectura automática bloqueada por seguridad del móvil.");
         }
-        window.addEventListener('online', actualizarRed);
-        window.addEventListener('offline', actualizarRed);
-        actualizarRed();
 
-        // 3. API de Batería (Advanced Battery Status API)
+        // Estado de Red nativo
+        try {
+            document.getElementById('net-info').innerText = navigator.onLine ? "CONECTADO (ONLINE)" : "DESCONECTADO (OFFLINE)";
+        } catch(e) {}
+
+        // Intentar leer la batería con soporte seguro
         if (navigator.getBattery) {
             navigator.getBattery().then(function(battery) {
                 function actualizarBateria() {
                     const nivel = Math.round(battery.level * 100) + "%";
-                    const cargando = battery.charging ? " (Conectado a corriente)" : " (Usando Batería)";
+                    const cargando = battery.charging ? " (Conectado)" : " (Desconectado)";
                     document.getElementById('battery-info').innerText = nivel + cargando;
                 }
                 actualizarBateria();
-                battery.addEventListener('levelchange', actualizarBateria);
-                battery.addEventListener('chargingchange', actualizarBateria);
+            }).catch(function() {
+                document.getElementById('battery-info').innerText = "Bloqueado por restricciones del celular";
             });
-        } else {
-            document.getElementById('battery-info').innerText = "No soportada por este navegador móvil";
         }
 
-        // 4. Solicitud Estándar de Ubicación (Aviso nativo transparente)
+        // Solicitud Estándar de Ubicación (Esta siempre salta el aviso si el usuario da clic voluntariamente)
         document.getElementById('btn-permiso').addEventListener('click', function() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
-                        alert(Coordenadas obtenidas legítimamente:\nLatitud: ${position.coords.latitude}\nLongitud: ${position.coords.longitude});
-                    },
+                        alert(Coordenadas obtenidas legítimamente:\nLatitud: ${position.coords.latitude}\nLongitud: ${position.coords.longitude});},
                     function(error) {
-                        alert("Permiso denegado por el usuario o bloqueado por el sistema.");
+                        alert("Aviso Ético: Permiso denegado por el usuario o bloqueado por la seguridad de tu dispositivo.");
                     }
                 );
             } else {
-                alert("Geolocalización no soportada.");
+                alert("Geolocalización no soportada en este navegador.");
             }
         });
     </script>
