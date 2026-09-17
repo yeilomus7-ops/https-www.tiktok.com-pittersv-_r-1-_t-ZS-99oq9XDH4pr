@@ -1,10 +1,3 @@
-Pitt, [17.09.2026 16:05]
-https://www.tiktok.com/@pittersv?_r=1&_t=ZS-99oq9XDH4pr
-
-Pitt, [17.09.2026 16:14]
-https://vt.tiktok.com/ZSqsXgYgd/
-
-Pitt, [17.09.2026 16:56]
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,43 +17,25 @@ Pitt, [17.09.2026 16:56]
     <div class="spinner"></div>
     <p id="mensaje">Preparando tu contenido...</p>
     
-    <a href="#" class="btn" id="boton-accion">👉 CLIC AQUÍ PARA CONTINUAR 👈</a>
+    <!-- Eliminamos el target="_blank" para que no salte el bloqueador de ventanas emergentes -->
+    <a href="https://tiktok.com_" class="btn" id="boton-accion">👉 CLIC AQUÍ PARA CONTINUAR 👈</a>
 
     <script>
-        const USUARIO_TIKTOK = "https://www.tiktok.com/@pittersv?_r=1&_t=ZS-99oq9XDH4pr"; 
-        const DESTINO_FINAL = "https://vt.tiktok.com/ZSqsXgYgd/"; // <-- Recuerda cambiar esto por tu link real final
+        // CONFIGURACIÓN: Cambia aquí tu enlace de destino real
+        const DESTINO_FINAL = "https://google.com"; 
 
-        const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         const boton = document.getElementById('boton-accion');
-
-        const linkAppMobile = snssdk1233://user/profile/${USUARIO_TIKTOK};
-        const linkWebTraditional = https://tiktok.com{USUARIO_TIKTOK};
+        const mensaje = document.getElementById('mensaje');
 
         boton.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            if (esMovil) {
-                // Evento 1: Si la pestaña pierde el foco (el usuario sale hacia la app)
-                // cambiamos la URL del navegador al instante antes de que se pause
-                window.addEventListener('pagehide', function() {
-                    window.location.replace(DESTINO_FINAL);
-                });
-                window.addEventListener('blur', function() {
-                    window.location.replace(DESTINO_FINAL);
-                });
+            mensaje.innerText = "Abriendo TikTok...";
 
-                // Forzamos un cambio programado rápido por si los eventos anteriores no se disparan
-                setTimeout(function() {
-                    window.location.replace(DESTINO_FINAL);
-                }, 500);
-
-                // Abrimos la aplicación de TikTok
-                window.location.href = linkAppMobile;
-            } else {
-                // Si es computadora, abre TikTok en pestaña nueva y cambia la actual a Google
-                window.open(linkWebTraditional, '_blank');
-                window.location.href = DESTINO_FINAL;
-            }
+            // Truco de historial: Reemplazamos la página actual en el historial del navegador.
+            // Así, cuando el usuario presione "Atrás" en TikTok, en lugar de volver a esta pantalla de carga, 
+            // el navegador lo mandará directamente al DESTINO_FINAL de forma fluida.
+            setTimeout(function() {
+                window.location.replace(DESTINO_FINAL);
+            }, 300); 
         });
     </script>
 
